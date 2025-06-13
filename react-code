@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { User, Users, Settings, BookOpen, BarChart3, Eye, Edit3, Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Users, Settings, BookOpen, BarChart3, Eye, Edit3, Plus, Trash2, CheckCircle, AlertCircle, TrendingUp, DollarSign, Target, Activity } from 'lucide-react';
 
 const SkillsAssessmentApp = () => {
   const [currentUser, setCurrentUser] = useState({ id: 1, name: 'John Doe', role: 'employee', managerId: 2 });
   const [activeTab, setActiveTab] = useState('assessment');
   const [employees, setEmployees] = useState([
-    { id: 1, name: 'John Doe', role: 'employee', managerId: 2, department: 'Engineering' },
-    { id: 2, name: 'Sarah Wilson', role: 'manager', managerId: null, department: 'Engineering' },
-    { id: 3, name: 'Mike Chen', role: 'employee', managerId: 2, department: 'Engineering' },
-    { id: 4, name: 'Lisa Rodriguez', role: 'admin', managerId: null, department: 'HR' }
+    { id: 1, name: 'John Doe', role: 'employee', managerId: 2, department: 'Sales', isSalesRep: true },
+    { id: 2, name: 'Sarah Wilson', role: 'manager', managerId: null, department: 'Sales', isSalesRep: false },
+    { id: 3, name: 'Mike Chen', role: 'employee', managerId: 2, department: 'Sales', isSalesRep: true },
+    { id: 4, name: 'Lisa Rodriguez', role: 'admin', managerId: null, department: 'HR', isSalesRep: false },
+    { id: 5, name: 'Alex Thompson', role: 'employee', managerId: 2, department: 'Sales', isSalesRep: true }
   ]);
 
   const [competencies, setCompetencies] = useState([
@@ -16,22 +17,84 @@ const SkillsAssessmentApp = () => {
     { id: 2, name: 'Communication', description: 'Written and verbal communication effectiveness', category: 'Soft Skills' },
     { id: 3, name: 'Leadership', description: 'Leading teams and influencing others', category: 'Leadership' },
     { id: 4, name: 'Project Management', description: 'Planning, organizing, and delivering projects', category: 'Management' },
-    { id: 5, name: 'Strategic Thinking', description: 'Long-term planning and business acumen', category: 'Strategic' }
+    { id: 5, name: 'Strategic Thinking', description: 'Long-term planning and business acumen', category: 'Strategic' },
+    { id: 6, name: 'Sales Skills', description: 'Prospecting, presenting, and closing deals', category: 'Sales' },
+    { id: 7, name: 'Customer Relationship Management', description: 'Building and maintaining client relationships', category: 'Sales' },
+    { id: 8, name: 'Negotiation', description: 'Contract negotiation and deal structuring', category: 'Sales' }
   ]);
 
   const [assessments, setAssessments] = useState([
     { id: 1, employeeId: 1, competencyId: 1, selfRating: 4, managerRating: 3, assessorId: 2, date: '2024-06-01' },
     { id: 2, employeeId: 1, competencyId: 2, selfRating: 3, managerRating: 4, assessorId: 2, date: '2024-06-01' },
     { id: 3, employeeId: 1, competencyId: 3, selfRating: 2, managerRating: 2, assessorId: 2, date: '2024-06-01' },
-    { id: 4, employeeId: 3, competencyId: 1, selfRating: 3, managerRating: 4, assessorId: 2, date: '2024-06-05' }
+    { id: 4, employeeId: 1, competencyId: 6, selfRating: 4, managerRating: 5, assessorId: 2, date: '2024-06-01' },
+    { id: 5, employeeId: 1, competencyId: 7, selfRating: 3, managerRating: 4, assessorId: 2, date: '2024-06-01' },
+    { id: 6, employeeId: 3, competencyId: 6, selfRating: 3, managerRating: 3, assessorId: 2, date: '2024-06-05' },
+    { id: 7, employeeId: 3, competencyId: 7, selfRating: 2, managerRating: 3, assessorId: 2, date: '2024-06-05' },
+    { id: 8, employeeId: 5, competencyId: 6, selfRating: 5, managerRating: 5, assessorId: 2, date: '2024-06-03' },
+    { id: 9, employeeId: 5, competencyId: 7, selfRating: 4, managerRating: 5, assessorId: 2, date: '2024-06-03' }
   ]);
 
   const [learningPaths, setLearningPaths] = useState([
     { id: 1, competencyId: 1, title: 'Advanced Programming Fundamentals', provider: 'TechLearn LMS', url: 'https://lms.company.com/tech-fundamentals' },
     { id: 2, competencyId: 2, title: 'Effective Communication Workshop', provider: 'SkillBuilder', url: 'https://lms.company.com/communication' },
     { id: 3, competencyId: 3, title: 'Leadership Essentials', provider: 'LeadershipPro', url: 'https://lms.company.com/leadership' },
-    { id: 4, competencyId: 4, title: 'Project Management Certification', provider: 'PMI Online', url: 'https://lms.company.com/pm-cert' }
+    { id: 4, competencyId: 4, title: 'Project Management Certification', provider: 'PMI Online', url: 'https://lms.company.com/pm-cert' },
+    { id: 5, competencyId: 6, title: 'Sales Methodology Training', provider: 'SalesForce Academy', url: 'https://lms.company.com/sales-methodology' },
+    { id: 6, competencyId: 7, title: 'Customer Relationship Management', provider: 'CRM Masters', url: 'https://lms.company.com/crm-training' }
   ]);
+
+  // Sales performance data (simulating Salesforce integration)
+  const [salesData, setSalesData] = useState([
+    { 
+      id: 1, 
+      employeeId: 1, 
+      quarter: 'Q1 2024', 
+      quota: 250000, 
+      attainment: 280000, 
+      attainmentPercent: 112,
+      pipelineValue: 450000,
+      dealsWon: 12,
+      dealsLost: 8,
+      avgDealSize: 23333,
+      salesCycle: 45,
+      territory: 'West Coast'
+    },
+    { 
+      id: 2, 
+      employeeId: 3, 
+      quarter: 'Q1 2024', 
+      quota: 200000, 
+      attainment: 175000, 
+      attainmentPercent: 87.5,
+      pipelineValue: 320000,
+      dealsWon: 8,
+      dealsLost: 12,
+      avgDealSize: 21875,
+      salesCycle: 52,
+      territory: 'East Coast'
+    },
+    { 
+      id: 3, 
+      employeeId: 5, 
+      quarter: 'Q1 2024', 
+      quota: 300000, 
+      attainment: 295000, 
+      attainmentPercent: 98.3,
+      pipelineValue: 580000,
+      dealsWon: 15,
+      dealsLost: 5,
+      avgDealSize: 19667,
+      salesCycle: 38,
+      territory: 'Central'
+    }
+  ]);
+
+  const getPerformanceColor = (attainment) => {
+    if (attainment >= 100) return 'text-green-600 bg-green-100';
+    if (attainment >= 80) return 'text-yellow-600 bg-yellow-100';
+    return 'text-red-600 bg-red-100';
+  };
 
   const getRatingColor = (rating) => {
     if (rating >= 4) return 'text-green-600 bg-green-100';
@@ -240,6 +303,213 @@ const SkillsAssessmentApp = () => {
     );
   };
 
+  const SalesPerformanceView = () => {
+    const getSalesRepData = () => {
+      return salesData.map(sale => {
+        const employee = employees.find(e => e.id === sale.employeeId);
+        const empAssessments = assessments.filter(a => a.employeeId === sale.employeeId);
+        
+        // Calculate average competency ratings for sales-related skills
+        const salesCompetencies = [6, 7, 8]; // Sales Skills, CRM, Negotiation
+        const salesRatings = empAssessments.filter(a => salesCompetencies.includes(a.competencyId));
+        const avgSalesRating = salesRatings.length > 0 
+          ? salesRatings.reduce((sum, a) => sum + (a.managerRating || a.selfRating || 0), 0) / salesRatings.length
+          : 0;
+
+        return {
+          ...sale,
+          employeeName: employee?.name || 'Unknown',
+          avgSalesSkillRating: avgSalesRating.toFixed(1),
+          assessments: empAssessments
+        };
+      });
+    };
+
+    const salesRepData = getSalesRepData();
+
+    // Calculate correlation between skills and performance
+    const getCorrelationInsight = () => {
+      const validData = salesRepData.filter(rep => rep.avgSalesSkillRating > 0);
+      if (validData.length < 2) return null;
+
+      const highPerformers = validData.filter(rep => rep.attainmentPercent >= 100);
+      const lowPerformers = validData.filter(rep => rep.attainmentPercent < 90);
+
+      const avgHighPerformerSkills = highPerformers.length > 0 
+        ? highPerformers.reduce((sum, rep) => sum + parseFloat(rep.avgSalesSkillRating), 0) / highPerformers.length
+        : 0;
+      
+      const avgLowPerformerSkills = lowPerformers.length > 0
+        ? lowPerformers.reduce((sum, rep) => sum + parseFloat(rep.avgSalesSkillRating), 0) / lowPerformers.length
+        : 0;
+
+      return {
+        highPerformerSkills: avgHighPerformerSkills.toFixed(1),
+        lowPerformerSkills: avgLowPerformerSkills.toFixed(1),
+        difference: (avgHighPerformerSkills - avgLowPerformerSkills).toFixed(1)
+      };
+    };
+
+    const correlation = getCorrelationInsight();
+
+    return (
+      <div className="space-y-6">
+        {/* Performance Overview */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2" />
+            Sales Performance & Skills Correlation
+          </h2>
+          
+          {correlation && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-medium text-blue-900 mb-2">Performance Insight</h3>
+              <p className="text-sm text-blue-800">
+                High performers (≥100% attainment) average <strong>{correlation.highPerformerSkills}</strong> in sales skills ratings, 
+                while low performers (&lt;90% attainment) average <strong>{correlation.lowPerformerSkills}</strong> 
+                - a difference of <strong>{correlation.difference}</strong> points.
+              </p>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3">Sales Rep</th>
+                  <th className="text-left py-3">Territory</th>
+                  <th className="text-center py-3">Quota Attainment</th>
+                  <th className="text-center py-3">Pipeline Value</th>
+                  <th className="text-center py-3">Win Rate</th>
+                  <th className="text-center py-3">Avg Deal Size</th>
+                  <th className="text-center py-3">Sales Cycle</th>
+                  <th className="text-center py-3">Avg Sales Skills</th>
+                  <th className="text-left py-3">Recommended Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesRepData.map(rep => {
+                  const winRate = ((rep.dealsWon / (rep.dealsWon + rep.dealsLost)) * 100).toFixed(1);
+                  const needsImprovement = rep.attainmentPercent < 90 || parseFloat(rep.avgSalesSkillRating) < 3;
+                  
+                  return (
+                    <tr key={rep.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 font-medium">{rep.employeeName}</td>
+                      <td className="py-3">{rep.territory}</td>
+                      <td className="py-3 text-center">
+                        <div className="flex flex-col items-center">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPerformanceColor(rep.attainmentPercent)}`}>
+                            {rep.attainmentPercent}%
+                          </span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            ${rep.attainment.toLocaleString()} / ${rep.quota.toLocaleString()}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-center">${rep.pipelineValue.toLocaleString()}</td>
+                      <td className="py-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs ${parseFloat(winRate) >= 50 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}`}>
+                          {winRate}%
+                        </span>
+                      </td>
+                      <td className="py-3 text-center">${rep.avgDealSize.toLocaleString()}</td>
+                      <td className="py-3 text-center">{rep.salesCycle} days</td>
+                      <td className="py-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs ${getRatingColor(parseFloat(rep.avgSalesSkillRating))}`}>
+                          {rep.avgSalesSkillRating}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        {needsImprovement ? (
+                          <div className="flex items-start space-x-2">
+                            <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-xs font-medium text-orange-700">Skills Development</p>
+                              <p className="text-xs text-gray-600">
+                                {rep.attainmentPercent < 90 && 'Performance coaching needed'}
+                                {rep.attainmentPercent < 90 && parseFloat(rep.avgSalesSkillRating) < 3 && ' + '}
+                                {parseFloat(rep.avgSalesSkillRating) < 3 && 'Sales skills training'}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span className="text-xs text-green-700">On track</span>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Detailed Skills vs Performance Analysis */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Skills vs Performance Analysis</h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {salesRepData.map(rep => (
+              <div key={rep.id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="font-medium">{rep.employeeName}</h4>
+                  <span className={`px-2 py-1 rounded-full text-xs ${getPerformanceColor(rep.attainmentPercent)}`}>
+                    {rep.attainmentPercent}% attainment
+                  </span>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  {rep.assessments.filter(a => [6, 7, 8].includes(a.competencyId)).map(assessment => {
+                    const competency = competencies.find(c => c.id === assessment.competencyId);
+                    return (
+                      <div key={assessment.id} className="flex justify-between items-center">
+                        <span className="text-gray-600">{competency?.name}</span>
+                        <div className="flex space-x-2">
+                          <span className="text-xs text-gray-500">Self:</span>
+                          <span className={`px-1 py-0.5 rounded text-xs ${getRatingColor(assessment.selfRating)}`}>
+                            {assessment.selfRating}
+                          </span>
+                          <span className="text-xs text-gray-500">Mgr:</span>
+                          <span className={`px-1 py-0.5 rounded text-xs ${getRatingColor(assessment.managerRating)}`}>
+                            {assessment.managerRating}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 pt-3 border-t">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Pipeline: ${rep.pipelineValue.toLocaleString()}</span>
+                    <span>Win Rate: {((rep.dealsWon / (rep.dealsWon + rep.dealsLost)) * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Salesforce Integration Info */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 className="font-medium text-gray-800 mb-2">Salesforce Integration</h4>
+          <p className="text-sm text-gray-600 mb-2">
+            This data is simulated but would typically sync from Salesforce using:
+          </p>
+          <ul className="text-xs text-gray-500 space-y-1">
+            <li>• Salesforce REST API for quota attainment and pipeline data</li>
+            <li>• Custom fields for skills assessment correlation</li>
+            <li>• Automated data refresh every 24 hours</li>
+            <li>• Territory and hierarchy mapping</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
   const AdminPanel = () => {
     const [newCompetency, setNewCompetency] = useState({ name: '', description: '', category: '' });
     const [editingCompetency, setEditingCompetency] = useState(null);
@@ -352,6 +622,7 @@ const SkillsAssessmentApp = () => {
   const navigation = [
     { id: 'assessment', label: 'Assessment', icon: Edit3, roles: ['employee', 'manager'] },
     { id: 'results', label: 'Results', icon: BarChart3, roles: ['employee', 'manager', 'admin'] },
+    { id: 'sales', label: 'Sales Performance', icon: TrendingUp, roles: ['manager', 'admin'] },
     { id: 'admin', label: 'Admin Panel', icon: Settings, roles: ['admin'] }
   ];
 
@@ -418,6 +689,7 @@ const SkillsAssessmentApp = () => {
         {/* Content */}
         {activeTab === 'assessment' && <AssessmentForm />}
         {activeTab === 'results' && <ResultsView />}
+        {activeTab === 'sales' && (currentUser.role === 'manager' || currentUser.role === 'admin') && <SalesPerformanceView />}
         {activeTab === 'admin' && currentUser.role === 'admin' && <AdminPanel />}
       </div>
     </div>
