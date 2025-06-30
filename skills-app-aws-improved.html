@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Skills Assessment App</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // Extract React hooks
+        const { useState, useEffect, useCallback, useMemo } = React;
+        
+        // Lucide React icons (simplified versions)
+        const User = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }),
+            React.createElement('circle', { cx: 12, cy: 7, r: 4 })
+        );
+        
+        const Edit3 = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('path', { d: 'M12 20h9' }),
+            React.createElement('path', { d: 'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' })
+        );
+        
+        const BarChart3 = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('path', { d: 'M3 3v18h18' }),
+            React.createElement('path', { d: 'M18 17V9' }),
+            React.createElement('path', { d: 'M13 17V5' }),
+            React.createElement('path', { d: 'M8 17v-3' })
+        );
+        
+        const BookOpen = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('path', { d: 'M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z' }),
+            React.createElement('path', { d: 'M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z' })
+        );
+        
+        const ChevronDown = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('polyline', { points: '6,9 12,15 18,9' })
+        );
+        
+        const ChevronUp = () => React.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, 
+            React.createElement('polyline', { points: '18,15 12,9 6,15' })
+        );
+
+        const SkillsAssessmentApp = () => {
+            const [currentUser, setCurrentUser] = useState({ id: 1, name: 'John Doe', role: 'employee', managerId: 2 });
+            const [activeTab, setActiveTab] = useState('assessment');
+            
+            // Add data structures
+            const [employees, setEmployees] = useState([
+                { id: 1, name: 'John Doe', role: 'employee', managerId: 2, department: 'Sales', isSalesRep: true },
+                { id: 2, name: 'Sarah Wilson', role: 'manager', managerId: null, department: 'Sales', isSalesRep: false },
+                { id: 3, name: 'Mike Chen', role: 'employee', managerId: 2, department: 'Sales', isSalesRep: true },
+                { id: 4, name: 'Lisa Rodriguez', role: 'admin', managerId: null, department: 'HR', isSalesRep: false }
+            ]);
+
+            // AWS Competencies with shorter descriptors for better UX
+            const [competencies, setCompetencies] = useState([
+                { 
+                    id: 1, 
+                    name: 'Customer Discovery & Research', 
+                    description: 'Ability to conduct comprehensive research and discovery to understand customer business context and challenges', 
+                    category: 'Value Framing',
+                    levelDescriptors: {
+                        0: 'Conducts minimal or no pre-meeting research; relies on basic company information. Shows limited understanding of customer\'s business context during conversations.',
+                        1: 'Researches basic company facts and industry information using standard sources. Asks basic discovery questions but may miss key business drivers.',
+                        2: 'Conducts comprehensive research across multiple sources to understand business model, competitive landscape, and key stakeholders. Uncovers critical business challenges and quantifies impact through strategic questioning.',
+                        3: 'Synthesizes complex research into strategic insights; anticipates customer needs and industry trends; coaches others on advanced research techniques. Masterfully guides discovery conversations to reveal hidden challenges and opportunities; teaches others advanced discovery methodologies.'
+                    }
+                },
+                { 
+                    id: 2, 
+                    name: 'Situational Fluency', 
+                    description: 'Ability to read situations, adapt communication style, and respond appropriately to customer context and cues', 
+                    category: 'Value Framing',
+                    levelDescriptors: {
+                        0: 'Shows limited awareness of customer verbal and non-verbal cues; uses standard approach regardless of context. Communicates using technical jargon without considering audience understanding.',
+                        1: 'Demonstrates basic listening skills and attempts to adapt approach when prompted or coached. Recognizes when to adjust language but may not always execute effectively.',
+                        2: 'Actively listens to both stated and unstated customer needs; consistently adapts communication style and messaging based on audience and context. Tailors communication style, pace, and content to resonate with different stakeholder types and situations.',
+                        3: 'Demonstrates exceptional empathy and intuition; seamlessly adapts in real-time to create optimal customer experiences; mentors others on advanced listening and adaptation techniques. Masters the art of influential communication across all stakeholder levels; develops others\' situational awareness and adaptive communication skills.'
+                    }
+                },
+                { 
+                    id: 3, 
+                    name: 'Business Challenge Identification', 
+                    description: 'Ability to identify, understand, and quantify business challenges and their impact on customer organizations', 
+                    category: 'Value Framing',
+                    levelDescriptors: {
+                        0: 'Focuses on surface issues; does not probe for underlying business challenges. Rarely links challenges to business impact or ROI.',
+                        1: 'Uses basic questions to identify challenges; quantifies impact with guidance. Attempts to quantify impact but may lack depth or accuracy.',
+                        2: 'Uncovers and quantifies business challenges and ROI; identifies change champions. Helps customers assess investment needs and expected ROI timelines.',
+                        3: 'Reveals hidden challenges and business drivers; shapes customer priorities; mentors others in strategic discovery. Guides customers in prioritizing challenges for maximum business value.'
+                    }
+                },
+                { 
+                    id: 4, 
+                    name: 'Value Mapping & Executive Engagement', 
+                    description: 'Ability to create value maps and engage effectively with executive stakeholders to align on strategic outcomes', 
+                    category: 'Value Framing',
+                    levelDescriptors: {
+                        0: 'Unaware of value mapping or executive alignment; does not engage executives. Struggles to articulate customer goals in business terms.',
+                        1: 'Creates simple value maps and engages some stakeholders with limited impact. Attempts to use customer language but may default to AWS terminology.',
+                        2: 'Develops clear value maps; crafts compelling Exec POVs; gains alignment on future state and next steps. Consistently uses customer language to capture challenges and goals.',
+                        3: 'Shapes executive vision and strategy; influences senior stakeholders; coaches others in value mapping and executive engagement. Develops others\' ability to engage and align executives around strategic outcomes.'
+                    }
+                },
+                { 
+                    id: 5, 
+                    name: 'Applies Solution Expertise', 
+                    description: 'Ability to apply deep solution knowledge to address customer needs and outline clear next steps', 
+                    category: 'Value Framing',
+                    levelDescriptors: {
+                        0: 'Relies on generic or outdated solution knowledge; unable to articulate how solutions address specific customer needs. Struggles to connect solution features to business outcomes or customer objectives.',
+                        1: 'Demonstrates basic understanding of AWS solutions and can describe standard features; applies solution knowledge when prompted or with guidance. Connects some solution features to customer needs but may not address unique business challenges.',
+                        2: 'Applies deep solution expertise to outline clear next steps for solution exploration; defines roles and responsibilities for AWS team, partners, and customer; adapts solution recommendations to customer context. Clearly links solution capabilities to customer business objectives and desired outcomes; ensures solution exploration is aligned with customer strategy.',
+                        3: 'Anticipates customer needs and proactively tailors solution strategies; seamlessly integrates AWS, partner, and customer resources; mentors others on advanced solution design and planning. Shapes customer solution vision; influences customer and team approach to solution design; develops others\' solution expertise and strategic planning skills.'
+                    }
+                }
+            ]);
+            // Add learning paths data
+            const [learningPaths] = useState([
+                { 
+                    id: 1, 
+                    competencyId: 1, 
+                    title: 'Advanced Customer Discovery Techniques', 
+                    provider: 'AWS Training', 
+                    duration: '6 hours',
+                    url: 'https://learning.aws.com/customer-discovery',
+                    description: 'Master comprehensive research methodologies and strategic questioning techniques for uncovering customer business challenges'
+                },
+                { 
+                    id: 2, 
+                    competencyId: 2, 
+                    title: 'Situational Leadership & Communication', 
+                    provider: 'LinkedIn Learning', 
+                    duration: '4 hours',
+                    url: 'https://learning.company.com/situational-fluency',
+                    description: 'Develop advanced listening skills and adaptive communication techniques for different stakeholder types'
+                },
+                { 
+                    id: 3, 
+                    competencyId: 3, 
+                    title: 'Business Challenge Analysis & ROI Quantification', 
+                    provider: 'AWS Professional Services', 
+                    duration: '8 hours',
+                    url: 'https://learning.aws.com/business-challenge-id',
+                    description: 'Learn systematic approaches to identify, analyze and quantify business challenges and their ROI impact'
+                },
+                { 
+                    id: 4, 
+                    competencyId: 4, 
+                    title: 'Executive Engagement & Value Mapping', 
+                    provider: 'AWS Sales Training', 
+                    duration: '5 hours',
+                    url: 'https://learning.aws.com/executive-engagement',
+                    description: 'Master value mapping techniques and executive communication strategies for strategic alignment'
+                },
+                { 
+                    id: 5, 
+                    competencyId: 5, 
+                    title: 'AWS Solution Architecture & Design', 
+                    provider: 'AWS Technical Training', 
+                    duration: '12 hours',
+                    url: 'https://learning.aws.com/solution-expertise',
+                    description: 'Deep dive into AWS solutions and how to apply them strategically to customer business objectives'
+                }
+            ]);
+
+            const [assessments, setAssessments] = useState([
+                { id: 1, employeeId: 1, competencyId: 1, selfRating: 2, managerRating: 1, assessorId: 2, date: '2024-06-01' },
+                { id: 2, employeeId: 1, competencyId: 2, selfRating: 1, managerRating: 2, assessorId: 2, date: '2024-06-01' },
+                { id: 3, employeeId: 1, competencyId: 3, selfRating: 1, managerRating: 1, assessorId: 2, date: '2024-06-01' },
+                { id: 4, employeeId: 1, competencyId: 4, selfRating: 0, managerRating: 1, assessorId: 2, date: '2024-06-01' },
+                { id: 5, employeeId: 1, competencyId: 5, selfRating: 1, managerRating: 2, assessorId: 2, date: '2024-06-01' },
+                { id: 6, employeeId: 3, competencyId: 1, selfRating: 2, managerRating: 2, assessorId: 2, date: '2024-06-05' },
+                { id: 7, employeeId: 3, competencyId: 2, selfRating: 1, managerRating: 2, assessorId: 2, date: '2024-06-05' },
+                { id: 8, employeeId: 3, competencyId: 3, selfRating: 2, managerRating: 3, assessorId: 2, date: '2024-06-05' },
+                { id: 9, employeeId: 3, competencyId: 4, selfRating: 1, managerRating: 1, assessorId: 2, date: '2024-06-05' },
+                { id: 10, employeeId: 3, competencyId: 5, selfRating: 2, managerRating: 2, assessorId: 2, date: '2024-06-05' }
+            ]);
+            
+            const handleRoleSwitch = useCallback((role) => {
+                const userMap = {
+                    'employee': { id: 1, name: 'John Doe', role: 'employee', managerId: 2 },
+                    'manager': { id: 2, name: 'Sarah Wilson', role: 'manager', managerId: null },
+                    'admin': { id: 4, name: 'Lisa Rodriguez', role: 'admin', managerId: null }
+                };
+                setCurrentUser(userMap[role]);
+                setActiveTab('assessment');
+            }, []);
+
+            // Assessment Form Component with improved interface
+            const AssessmentForm = () => {
+                const [selectedEmployee, setSelectedEmployee] = useState(currentUser.id);
+                const [ratings, setRatings] = useState({});
+                const [expandedCompetency, setExpandedCompetency] = useState(null);
+
+                const handleRatingChange = useCallback((competencyId, rating) => {
+                    setRatings(prev => ({ ...prev, [competencyId]: rating }));
+                }, []);
+
+                const handleSubmit = useCallback(() => {
+                    if (Object.keys(ratings).length === 0) {
+                        alert('Please provide at least one rating before submitting.');
+                        return;
+                    }
+                    
+                    // Save the ratings to assessments
+                    Object.entries(ratings).forEach(([competencyId, rating]) => {
+                        const existingAssessment = assessments.find(a => 
+                            a.employeeId === selectedEmployee && a.competencyId === parseInt(competencyId)
+                        );
+
+                        if (existingAssessment) {
+                            setAssessments(prev => prev.map(a => 
+                                a.id === existingAssessment.id 
+                                    ? { 
+                                        ...a, 
+                                        [currentUser.role === 'manager' ? 'managerRating' : 'selfRating']: rating, 
+                                        date: new Date().toISOString().split('T')[0] 
+                                    }
+                                    : a
+                            ));
+                        } else {
+                            const newAssessment = {
+                                id: Math.max(...assessments.map(a => a.id), 0) + 1,
+                                employeeId: selectedEmployee,
+                                competencyId: parseInt(competencyId),
+                                selfRating: currentUser.role === 'employee' ? rating : null,
+                                managerRating: currentUser.role === 'manager' ? rating : null,
+                                assessorId: currentUser.id,
+                                date: new Date().toISOString().split('T')[0]
+                            };
+                            setAssessments(prev => [...prev, newAssessment]);
+                        }
+                    });
+                    
+                    alert('Assessment submitted successfully!');
+                    setRatings({});
+                }, [ratings, selectedEmployee, assessments, currentUser]);
+
+                const employeesToAssess = currentUser.role === 'manager' 
+                    ? employees.filter(e => e.managerId === currentUser.id)
+                    : [currentUser];
+
+                // Get existing ratings for the selected employee
+                const existingRatings = useMemo(() => {
+                    return assessments.filter(a => a.employeeId === selectedEmployee);
+                }, [assessments, selectedEmployee]);
+
+                return React.createElement('div', { className: 'space-y-6' },
+                    React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' },
+                        React.createElement('h2', { className: 'text-xl font-semibold mb-4' }, 'AWS Competency Skills Assessment'),
+                        
+                        // Employee selector for managers
+                        currentUser.role === 'manager' && React.createElement('div', { className: 'mb-6' },
+                            React.createElement('label', { className: 'block text-sm font-medium mb-2' }, 'Select Employee'),
+                            React.createElement('select', {
+                                value: selectedEmployee,
+                                onChange: (e) => setSelectedEmployee(parseInt(e.target.value)),
+                                className: 'w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500'
+                            }, employeesToAssess.map(emp => 
+                                React.createElement('option', { key: emp.id, value: emp.id }, emp.name)
+                            ))
+                        ),
+
+                        // Rating Scale Legend
+                        React.createElement('div', { className: 'mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg' },
+                            React.createElement('h3', { className: 'font-medium text-blue-900 mb-3' }, 'Rating Scale'),
+                            React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-4 gap-3 text-sm' },
+                                React.createElement('div', { className: 'flex items-center' },
+                                    React.createElement('span', { className: 'w-6 h-6 rounded-full bg-red-100 text-red-800 flex items-center justify-center text-xs font-medium mr-2' }, '0'),
+                                    React.createElement('span', { className: 'text-red-800' }, 'Not Aware/No Knowledge')
+                                ),
+                                React.createElement('div', { className: 'flex items-center' },
+                                    React.createElement('span', { className: 'w-6 h-6 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center text-xs font-medium mr-2' }, '1'),
+                                    React.createElement('span', { className: 'text-orange-800' }, 'Emerging')
+                                ),
+                                React.createElement('div', { className: 'flex items-center' },
+                                    React.createElement('span', { className: 'w-6 h-6 rounded-full bg-yellow-100 text-yellow-800 flex items-center justify-center text-xs font-medium mr-2' }, '2'),
+                                    React.createElement('span', { className: 'text-yellow-800' }, 'Proficient')
+                                ),
+                                React.createElement('div', { className: 'flex items-center' },
+                                    React.createElement('span', { className: 'w-6 h-6 rounded-full bg-green-100 text-green-800 flex items-center justify-center text-xs font-medium mr-2' }, '3'),
+                                    React.createElement('span', { className: 'text-green-800' }, 'Mastery/Transforming Others')
+                                )
+                            )
+                        ),
+
+                        // Competencies rating with expandable descriptions
+                        React.createElement('div', { className: 'space-y-4' },
+                            competencies.map(competency => {
+                                const existingRating = existingRatings.find(r => r.competencyId === competency.id);
+                                const currentRating = ratings[competency.id];
+                                const isExpanded = expandedCompetency === competency.id;
+                                
+                                return React.createElement('div', { key: competency.id, className: 'border rounded-lg p-4 relative' },
+                                    React.createElement('div', { className: 'mb-3' },
+                                        React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+                                            React.createElement('div', null,
+                                                React.createElement('h3', { className: 'font-medium' }, competency.name),
+                                                React.createElement('span', { className: 'text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded' }, competency.category)
+                                            ),
+                                            React.createElement('button', {
+                                                onClick: () => setExpandedCompetency(isExpanded ? null : competency.id),
+                                                className: 'text-gray-500 hover:text-gray-700 p-1'
+                                            }, isExpanded ? React.createElement(ChevronUp) : React.createElement(ChevronDown))
+                                        ),
+                                        React.createElement('p', { className: 'text-sm text-gray-600' }, competency.description)
+                                    ),
+                                    
+                                    // Expandable level descriptions
+                                    isExpanded && React.createElement('div', { className: 'mb-4 p-3 bg-gray-50 rounded-lg border' },
+                                        React.createElement('h4', { className: 'font-medium text-sm mb-3' }, 'Level Descriptions:'),
+                                        React.createElement('div', { className: 'space-y-2 text-xs' },
+                                            [0, 1, 2, 3].map(level => 
+                                                React.createElement('div', { key: level, className: 'flex' },
+                                                    React.createElement('span', { className: `w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-3 flex-shrink-0 ${
+                                                        level === 0 ? 'bg-red-100 text-red-800' :
+                                                        level === 1 ? 'bg-orange-100 text-orange-800' :
+                                                        level === 2 ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-green-100 text-green-800'
+                                                    }`}, level),
+                                                    React.createElement('span', { className: 'text-gray-700 leading-relaxed' }, competency.levelDescriptors[level])
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    
+                                    // Show existing ratings
+                                    existingRating && React.createElement('div', { className: 'mb-3 p-2 bg-gray-50 rounded text-sm' },
+                                        React.createElement('span', { className: 'text-gray-600' }, 'Current ratings: '),
+                                        existingRating.selfRating !== null && React.createElement('span', { className: 'mr-3' }, 
+                                            'Self: ', React.createElement('strong', null, existingRating.selfRating)
+                                        ),
+                                        existingRating.managerRating !== null && React.createElement('span', null, 
+                                            'Manager: ', React.createElement('strong', null, existingRating.managerRating)
+                                        )
+                                    ),
+                                    
+                                    React.createElement('div', { className: 'flex items-center space-x-2' },
+                                        React.createElement('span', { className: 'text-sm font-medium' }, 'Your Rating:'),
+                                        [0, 1, 2, 3].map(rating =>
+                                            React.createElement('button', {
+                                                key: rating,
+                                                onClick: () => handleRatingChange(competency.id, rating),
+                                                className: `w-10 h-10 rounded-full border-2 text-sm font-medium transition-colors ${
+                                                    currentRating === rating
+                                                        ? rating === 0 ? 'bg-red-500 text-white border-red-500' :
+                                                          rating === 1 ? 'bg-orange-500 text-white border-orange-500' :
+                                                          rating === 2 ? 'bg-yellow-500 text-white border-yellow-500' :
+                                                          'bg-green-500 text-white border-green-500'
+                                                        : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                                                }`
+                                            }, rating)
+                                        )
+                                    )
+                                );
+                            })
+                        ),
+
+                        React.createElement('button', {
+                            onClick: handleSubmit,
+                            disabled: Object.keys(ratings).length === 0,
+                            className: 'mt-6 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors'
+                        }, 'Submit Assessment')
+                    )
+                );
+            };
+            // Results View Component
+            const ResultsView = () => {
+                const getEmployeeAssessments = useCallback((employeeId) => {
+                    return assessments.filter(a => a.employeeId === employeeId);
+                }, [assessments]);
+
+                const getCompetencyName = useCallback((competencyId) => {
+                    const competency = competencies.find(c => c.id === competencyId);
+                    return competency?.name || 'Unknown';
+                }, [competencies]);
+
+                const getLearningPath = useCallback((competencyId) => {
+                    return learningPaths.find(lp => lp.competencyId === competencyId);
+                }, [learningPaths]);
+
+                const getRatingColor = useCallback((rating) => {
+                    if (!rating && rating !== 0) return 'text-gray-600 bg-gray-100';
+                    if (rating >= 3) return 'text-green-600 bg-green-100';
+                    if (rating >= 2) return 'text-yellow-600 bg-yellow-100';
+                    if (rating >= 1) return 'text-orange-600 bg-orange-100';
+                    return 'text-red-600 bg-red-100';
+                }, []);
+
+                const employeesToShow = useMemo(() => {
+                    if (currentUser.role === 'admin') return employees;
+                    if (currentUser.role === 'manager') {
+                        return employees.filter(e => e.managerId === currentUser.id || e.id === currentUser.id);
+                    }
+                    return [currentUser];
+                }, [currentUser, employees]);
+
+                return React.createElement('div', { className: 'space-y-6' },
+                    employeesToShow.map(employee => {
+                        const empAssessments = getEmployeeAssessments(employee.id);
+                        if (empAssessments.length === 0) return null;
+
+                        return React.createElement('div', { key: employee.id, className: 'bg-white rounded-lg shadow p-6' },
+                            React.createElement('h3', { className: 'text-lg font-semibold mb-4' }, `${employee.name} - AWS Competency Assessment Results`),
+                            
+                            React.createElement('div', { className: 'overflow-x-auto' },
+                                React.createElement('table', { className: 'w-full text-sm' },
+                                    React.createElement('thead', null,
+                                        React.createElement('tr', { className: 'border-b' },
+                                            React.createElement('th', { className: 'text-left py-2' }, 'Competency'),
+                                            React.createElement('th', { className: 'text-left py-2' }, 'Category'),
+                                            React.createElement('th', { className: 'text-center py-2' }, 'Self Rating'),
+                                            React.createElement('th', { className: 'text-center py-2' }, 'Manager Rating'),
+                                            React.createElement('th', { className: 'text-center py-2' }, 'Gap'),
+                                            React.createElement('th', { className: 'text-left py-2' }, 'Learning Path')
+                                        )
+                                    ),
+                                    React.createElement('tbody', null,
+                                        empAssessments.map(assessment => {
+                                            const competency = competencies.find(c => c.id === assessment.competencyId);
+                                            const gap = assessment.managerRating !== null && assessment.selfRating !== null 
+                                                ? assessment.managerRating - assessment.selfRating 
+                                                : null;
+                                            const learningPath = getLearningPath(assessment.competencyId);
+                                            const needsLearning = gap > 0 || (assessment.managerRating !== null && assessment.managerRating < 2);
+                                            
+                                            return React.createElement('tr', { key: assessment.id, className: `border-b ${needsLearning ? 'bg-yellow-50' : ''}` },
+                                                React.createElement('td', { className: 'py-3 font-medium' }, getCompetencyName(assessment.competencyId)),
+                                                React.createElement('td', { className: 'py-3 text-sm text-gray-600' }, competency?.category || ''),
+                                                React.createElement('td', { className: 'py-3 text-center' },
+                                                    assessment.selfRating !== null ? 
+                                                        React.createElement('span', { className: `px-2 py-1 rounded-full text-xs ${getRatingColor(assessment.selfRating)}` }, assessment.selfRating) :
+                                                        React.createElement('span', { className: 'text-gray-400' }, '-')
+                                                ),
+                                                React.createElement('td', { className: 'py-3 text-center' },
+                                                    assessment.managerRating !== null ? 
+                                                        React.createElement('span', { className: `px-2 py-1 rounded-full text-xs ${getRatingColor(assessment.managerRating)}` }, assessment.managerRating) :
+                                                        React.createElement('span', { className: 'text-gray-400' }, '-')
+                                                ),
+                                                React.createElement('td', { className: 'py-3 text-center' },
+                                                    gap !== null ? 
+                                                        React.createElement('span', { className: `px-2 py-1 rounded-full text-xs ${
+                                                            gap > 0 ? 'text-orange-600 bg-orange-100' : 
+                                                            gap < 0 ? 'text-red-600 bg-red-100' : 
+                                                            'text-gray-600 bg-gray-100'
+                                                        }` }, gap > 0 ? `+${gap}` : gap) :
+                                                        React.createElement('span', { className: 'text-gray-400' }, '-')
+                                                ),
+                                                React.createElement('td', { className: 'py-3' },
+                                                    needsLearning && learningPath ? 
+                                                        React.createElement('div', { className: 'space-y-1' },
+                                                            React.createElement('a', {
+                                                                href: learningPath.url,
+                                                                target: '_blank',
+                                                                rel: 'noopener noreferrer',
+                                                                className: 'text-blue-500 hover:text-blue-700 text-xs font-medium flex items-center'
+                                                            },
+                                                                React.createElement(BookOpen, { className: 'w-3 h-3 mr-1' }),
+                                                                learningPath.title
+                                                            ),
+                                                            React.createElement('div', { className: 'text-xs text-gray-500' },
+                                                                `${learningPath.provider} • ${learningPath.duration}`
+                                                            )
+                                                        ) :
+                                                        needsLearning ? 
+                                                            React.createElement('span', { className: 'text-xs text-orange-600' }, 'Training needed') :
+                                                            React.createElement('span', { className: 'text-xs text-green-600' }, 'On track')
+                                                )
+                                            );
+                                        })
+                                    )
+                                )
+                            )
+                        );
+                    }),
+                    employeesToShow.every(emp => getEmployeeAssessments(emp.id).length === 0) && 
+                        React.createElement('div', { className: 'bg-white rounded-lg shadow p-6 text-center' },
+                            React.createElement('p', { className: 'text-gray-500' }, 'No assessment results available yet.')
+                        )
+                );
+            };
+
+            return React.createElement('div', { className: 'min-h-screen bg-gray-100' },
+                // Header
+                React.createElement('div', { className: 'bg-white shadow-sm border-b' },
+                    React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8' },
+                        React.createElement('div', { className: 'flex justify-between items-center py-4' },
+                            React.createElement('h1', { className: 'text-2xl font-bold text-gray-900' }, 'AWS Skills Assessment Platform'),
+                            React.createElement('div', { className: 'flex items-center space-x-4' },
+                                React.createElement('span', { className: 'text-sm text-gray-500' }, `Welcome, ${currentUser.name}`),
+                                React.createElement('div', { className: 'flex space-x-2' },
+                                    React.createElement('button', {
+                                        onClick: () => handleRoleSwitch('employee'),
+                                        className: `px-3 py-1 text-xs rounded transition-colors ${
+                                            currentUser.role === 'employee' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                        }`
+                                    }, 'Employee'),
+                                    React.createElement('button', {
+                                        onClick: () => handleRoleSwitch('manager'),
+                                        className: `px-3 py-1 text-xs rounded transition-colors ${
+                                            currentUser.role === 'manager' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                        }`
+                                    }, 'Manager'),
+                                    React.createElement('button', {
+                                        onClick: () => handleRoleSwitch('admin'),
+                                        className: `px-3 py-1 text-xs rounded transition-colors ${
+                                            currentUser.role === 'admin' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                        }`
+                                    }, 'Admin')
+                                )
+                            )
+                        )
+                    )
+                ),
+                // Navigation
+                React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6' },
+                    React.createElement('nav', { className: 'flex space-x-8 mb-8' },
+                        React.createElement('button', {
+                            onClick: () => setActiveTab('assessment'),
+                            className: `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                activeTab === 'assessment'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                            }`
+                        },
+                            React.createElement(Edit3, { className: 'w-4 h-4 mr-2' }),
+                            'Assessment'
+                        ),
+                        React.createElement('button', {
+                            onClick: () => setActiveTab('results'),
+                            className: `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                                activeTab === 'results'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                            }`
+                        },
+                            React.createElement(BarChart3, { className: 'w-4 h-4 mr-2' }),
+                            'Results'
+                        )
+                    ),
+                    // Content
+                    React.createElement('main', null,
+                        activeTab === 'assessment' && React.createElement(AssessmentForm),
+                        activeTab === 'results' && React.createElement(ResultsView)
+                    )
+                )
+            );
+        };
+
+        ReactDOM.render(React.createElement(SkillsAssessmentApp), document.getElementById('root'));
+    </script>
+</body>
+</html>
